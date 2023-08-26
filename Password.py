@@ -22,49 +22,77 @@ def digit(password):
             return True
     return False
 
+def check_password_strength_option1(password):
+    length = len(password)
+    has_upper = uppercase(password)
+    has_lower = lowercase(password)
+    has_digit = digit(password)
 
-def special_char(password):
-    special_characters = "!@#&"
-    for char in password:
-        if char in special_characters:
-            return True
-    return False
+    if length < 5:
+        return "Very weak"
+    elif 5 <= length <= 7 and (has_upper or has_lower or has_digit):
+        return "Weak"
+    elif 8 <= length < 10 and has_upper and has_lower and has_digit:
+        return "Strong"
+    elif length >= 10 and has_upper and has_lower and has_digit:
+        return "Very strong"
+
+def check_password_strength_option2(password):
+    length = len(password)
+    num_digits = sum(1 for char in password if char.isdigit())
+
+    if length < 5:
+        return "Very weak"
+    elif 5 <= length <= 7:
+        return "Weak"
+    elif 8 <= length <= 10:
+        return "Strong"
+    else:
+        return "Very strong"
 
 
-def check_password_strength(password):
-    if len(password) < 8:
-        return "Weak, Password should be at least 8 characters long."
+def generate_random_password(length=12, num_digits=3):
+    if length < 8:
+        return "Error, Password must be at least 8 characters long."
 
-    if not uppercase(password) or not lowercase(password) or not digit(password) or not special_char(password):
-        return "Weak, Password should include uppercase, lowercase, digits, and special characters."
+    characters = string.ascii_letters + string.digits
+    digits = string.digits
 
-    return "Strong, Password is secure."
+    password = ''.join(random.choice(characters) for _ in range(length - num_digits))
+    password += ''.join(random.choice(digits) for _ in range(num_digits))
 
-
-def generate_random_password(length=12):
-    characters = string.ascii_letters + string.digits + "!@#&"
-
-    while True:
-        password = ''.join(random.choice(characters) for _ in range(length))
-        if uppercase(password) and lowercase(password) and digit(password) and special_char(password):
-            return password
+    return password
 
 
-choice = input("Press 1 to enter a manual password or 2 to generate a random password: ")
+choice = input("Press 1 to enter your own password or 2 to generate a random password: ")
 
 if choice == '1':
-    password = input("Enter a password: ")
-    strength_result = check_password_strength(password)
-    while "Weak" in strength_result:
-        print("Password is weak. Please enter a stronger password.")
+    while True:
         password = input("Enter a password: ")
-        strength_result = check_password_strength(password)
+        strength_result = check_password_strength_option1(password)
+        if strength_result in {"Strong", "Very strong"}:
+            print("Password strength:", strength_result)
+            break
+        else:
+            print("Password is not strong enough. Please enter a stronger password.")
+
 elif choice == '2':
-    password = generate_random_password()
+    while True:
+        try:
+            num_digits = int(input("Enter the number of digits you want in the password: "))
+            if num_digits < 0:
+                print("Error, Number of digits cannot be negative.")
+            elif num_digits < 8:
+                print("Error, Number of digits cannot be less than 8.")
+            else:
+                break
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+            continue
+
+    password = generate_random_password(length = num_digits)
+    strength_result = check_password_strength_option2(password)
     print("Generated random password:", password)
 else:
     print("Invalid choice.")
     exit()
-
-strength_result = check_password_strength(password)
-print(strength_result)
